@@ -41,7 +41,7 @@ fn part2(lines: &Vec<&str>) {
         };
     }
 
-    println!("PART 1: {answer}");
+    println!("PART 2: {answer}");
 }
 
 fn main() {
