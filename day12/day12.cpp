@@ -88,18 +88,14 @@ void part1(vector<string> &lines)
 void part2(vector<string> &lines)
 {
   unsigned long long answer = UINT64_MAX;
-  for (int i = 0; i < lines.size(); ++i)
+  std::vector<std::vector<int>> bfs(lines.size(), vector<int>(lines[0].size(), -1));
+  for (size_t i = 0; i < lines.size(); ++i)
   {
-    std::vector<std::vector<int>> bfs(lines.size(), vector<int>(lines[0].size(), -1));
-
-    for (size_t i = 0; i < lines.size(); ++i)
+    for (size_t j = 0; j < lines[0].size(); ++j)
     {
-      for (size_t j = 0; j < lines[0].size(); ++j)
+      if (lines[i][j] == 'a')
       {
-        if (lines[i][j] == 'a')
-        {
-          answer = min(answer, performBFS(lines, bfs, i, j));
-        }
+        answer = min(answer, performBFS(lines, bfs, i, j));
       }
     }
   }
