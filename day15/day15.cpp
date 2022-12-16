@@ -98,6 +98,7 @@ void part2(vector<string> &lines)
     sensorToBounds.emplace(ySensor, entry);
   }
 
+  const int WIDTH = MAX_COORD - MIN_COORD;
   for (int i = MIN_COORD; i <= MAX_COORD; ++i)
   {
     int rightMost = MIN_COORD;
@@ -117,9 +118,9 @@ void part2(vector<string> &lines)
       }
       rightMost = max(rightMost, right);
     }
-    if (blockCount < MAX_COORD - MIN_COORD)
+    if (blockCount < WIDTH)
     {
-      vector<bool> present(MAX_COORD - MIN_COORD + 1, false);
+      vector<bool> present(WIDTH + 1, false);
       for (const pair<int, int> &r : blocked)
       {
         if (r.second < r.first)
