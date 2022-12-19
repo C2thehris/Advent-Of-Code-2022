@@ -137,20 +137,58 @@ void part1(vector<string> &lines)
   cout << "PART 1: " << answer << endl;
 }
 
-void findOptimal2(const unordered_map<string, Valve> &valves, const Graph &graph,
+typedef tuple<unsigned long long, pair<string, int>, pair<string, int>, long long> State2;
+
+unsigned long long join(const unordered_set<string> &set, const unordered_map<string, Valve> &valves)
+{
+  unsigned long long ret = 0;
+  int i = 0;
+  for (const auto &entry : valves)
+  {
+    if (set.count(entry.first))
+    {
+      ret |= 1 << i;
+    }
+    ++i;
+  }
+  return ret;
+}
+
+unsigned long long seenCount = 0;
+unsigned long long nextShow = 1000000ull;
+const unsigned long long interval = 1000000ull;
+unsigned long long calls = 0;
+
+void findOptimal2(set<State2> &seen, const unordered_map<string, Valve> &valves, const Graph &graph,
                   unordered_set<string> &open, pair<string, int> playerState, pair<string, int> elephantState,
                   long long &best, int total_remaining, long long current_path)
 {
+  ++calls;
   const int time = max(playerState.second, elephantState.second);
   if (time <= 0 || total_remaining == 0)
   {
-    best = max(best, current_path);
+    if (current_path > best)
+    {
+      best = current_path;
+      std::cerr << current_path << '\n';
+    }
     return;
   }
   if (total_remaining * (time - 1) + current_path <= best)
   {
     return;
   }
+  State2 state{join(open, valves), playerState, elephantState, current_path};
+  if (seen.count(state))
+  {
+    if (seenCount >= nextShow)
+    {
+      std::cout << seenCount << ' ' << calls << '\n';
+      nextShow += interval;
+    }
+    return;
+  }
+
   string current;
   bool playerDecides = time == playerState.second;
   if (playerDecides)
@@ -171,11 +209,11 @@ void findOptimal2(const unordered_map<string, Valve> &valves, const Graph &graph
       const int t = time - dist - 1;
       if (playerDecides)
       {
-        findOptimal2(valves, graph, open, {dest, t}, elephantState, best, remainingWithNoCurrent, pathWithCurrent);
+        findOptimal2(seen, valves, graph, open, {dest, t}, elephantState, best, remainingWithNoCurrent, pathWithCurrent);
       }
       else
       {
-        findOptimal2(valves, graph, open, playerState, {dest, t}, best, remainingWithNoCurrent, pathWithCurrent);
+        findOptimal2(seen, valves, graph, open, playerState, {dest, t}, best, remainingWithNoCurrent, pathWithCurrent);
       }
     }
     open.erase(current);
@@ -185,13 +223,15 @@ void findOptimal2(const unordered_map<string, Valve> &valves, const Graph &graph
     const int t = time - dist;
     if (playerDecides)
     {
-      findOptimal2(valves, graph, open, {dest, t}, elephantState, best, total_remaining, current_path);
+      findOptimal2(seen, valves, graph, open, {dest, t}, elephantState, best, total_remaining, current_path);
     }
     else
     {
-      findOptimal2(valves, graph, open, playerState, {dest, t}, best, total_remaining, current_path);
+      findOptimal2(seen, valves, graph, open, playerState, {dest, t}, best, total_remaining, current_path);
     }
   }
+  ++seenCount;
+  seen.insert(state);
 }
 
 void part2(vector<string> &lines)
@@ -204,8 +244,9 @@ void part2(vector<string> &lines)
     total += it->second.getPressure();
   }
 
+  set<State2> memos;
   long long answer = 0ll;
-  findOptimal2(valves, graph, open, {"AA", 26}, {"AA", 26}, answer, total, 0);
+  findOptimal2(memos, valves, graph, open, {"AA", 26}, {"AA", 26}, answer, total, 0);
 
   cout << "PART 2: " << answer << endl;
 }
